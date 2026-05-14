@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Strata Enquiry Triage</title>
+  <style>
+    :root {
+      --space-1: 0.5rem;
+      --space-2: 0.75rem;
+      --space-3: 1rem;
+      --space-4: 1.5rem;
+      --space-5: 2rem;
+      --fs-sm: 0.8125rem;
+      --fs-body: 1.0625rem;
+      --fs-md: 1.125rem;
+      --fs-lg: 1.35rem;
+      --bg: #f0f3f6;
+      --card: #fff;
+      --text: #14181c;
+      --muted: #5c6570;
+      --accent: #0d6e5c;
+      --accent-hover: #0a5a4b;
+      --accent-muted: rgba(13, 110, 92, 0.14);
+      --border: #dfe4ea;
+      --warn: #b45309;
+      --warn-bg: #fff7ed;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --error-text: #991b1b;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 18px rgba(15, 23, 42, 0.05);
+      --shadow-work: 0 1px 3px rgba(13, 110, 92, 0.12), 0 8px 28px rgba(13, 110, 92, 0.08);
+      --radius: 12px;
+      --conf-high: #0a5c4d;
+      --conf-mid: #9a3412;
+      --conf-low: #b91c1c;
+      --chip-bg: #e8f2ef;
+      --chip-border: #9cc4b8;
+      --chip-text: #0f291f;
+      --focus-ring: 0 0 0 3px rgba(13, 110, 92, 0.35);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1215;
+        --card: #1a1f26;
+        --text: #e8eaed;
+        --muted: #9aa3ad;
+        --accent: #3d9b87;
+        --accent-hover: #52b09c;
+        --accent-muted: rgba(61, 155, 135, 0.18);
+        --border: #2d3540;
+        --warn: #fbbf24;
+        --warn-bg: #2d2410;
+        --error-bg: #2c1518;
+        --error-border: #5c2a32;
+        --error-text: #fca5a5;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+        --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.22);
+        --shadow-work: 0 0 0 1px rgba(61, 155, 135, 0.35), 0 8px 32px rgba(0, 0, 0, 0.35);
+        --conf-high: #6ee7c5;
+        --conf-mid: #fcd34d;
+        --conf-low: #fca5a5;
+        --chip-bg: #1e2c29;
+        --chip-border: #3d6b5e;
+        --chip-text: #e8f2ef;
+        --focus-ring: 0 0 0 3px rgba(61, 155, 135, 0.45);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .toast { transition: none !important; }
+      .btn { transition: none !important; }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      line-height: 1.55;
+      font-size: var(--fs-body);
+      min-height: 100vh;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: var(--space-3);
+      z-index: 100;
+      padding: var(--space-2) var(--space-3);
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .skip-link:focus-visible {
+      left: var(--space-3);
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: var(--space-4) var(--space-4);
+      box-shadow: var(--shadow-md);
+    }
+    header h1 {
+      font-size: var(--fs-lg);
+      font-weight: 650;
+      margin: 0;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    header .lede {
+      margin: var(--space-2) 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 58ch;
+    }
+    header .trust-line {
+      margin: var(--space-3) 0 0;
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      max-width: 62ch;
+      padding: var(--space-2) var(--space-3);
+      background: var(--accent-muted);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: var(--space-4) var(--space-3) var(--space-5);
+    }
+
+    .layout {
+      display: grid;
+      gap: var(--space-4);
+      align-items: start;
+    }
+    @media (min-width: 920px) {
+      .layout {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      }
+      .card--metrics {
+        position: sticky;
+        top: var(--space-3);
+        z-index: 1;
+      }
+    }
+
+    .panel--input label {
+      display: block;
+      font-weight: 650;
+      margin-bottom: var(--space-2);
+      font-size: var(--fs-sm);
+    }
+    textarea#enquiry {
+      width: 100%;
+      min-height: 220px;
+      padding: var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font: inherit;
+      resize: vertical;
+      background: var(--card);
+      color: var(--text);
+    }
+    textarea#enquiry:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+      border-color: var(--accent);
+    }
+    textarea#enquiry[aria-invalid="true"] {
+      border-color: #dc2626;
+    }
+
+    .actions {
+      margin-top: var(--space-3);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border: none;
+      min-height: 44px;
+      padding: 0.65rem 1.35rem;
+      font-size: var(--fs-body);
+      font-weight: 650;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s ease, transform 0.12s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+    .btn--primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn--primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+    .btn--primary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    .btn--secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn--secondary:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn--secondary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn--primary:active:not(:disabled),
+      .btn--secondary:active:not(:disabled) {
+        transform: none;
+      }
+    }
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .error {
+      margin-top: var(--space-3);
+      padding: var(--space-3);
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      border-radius: var(--radius);
+      color: var(--error-text);
+      font-size: 0.98rem;
+    }
+
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-3) var(--space-4);
+      box-shadow: var(--shadow-md);
+    }
+    .card--support {
+      box-shadow: var(--shadow-sm);
+    }
+    .card--work {
+      border-color: rgba(13, 110, 92, 0.35);
+      box-shadow: var(--shadow-work);
+    }
+    @media (prefers-color-scheme: dark) {
+      .card--work {
+        border-color: rgba(61, 155, 135, 0.4);
+      }
+    }
+
+    .card h2.kicker {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 0 0 var(--space-2);
+      color: var(--muted);
+      font-weight: 650;
+    }
+    .card h2.work-title {
+      font-size: var(--fs-md);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-3);
+      color: var(--text);
+      text-transform: none;
+    }
+    .subhead {
+      font-size: var(--fs-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 650;
+      margin: 0 0 var(--space-2);
+    }
+    .hint {
+      margin: 0 0 var(--space-3);
+      font-size: var(--fs-sm);
+      color: var(--muted);
+      max-width: 72ch;
+    }
+    .card p.prose {
+      margin: 0;
+      max-width: 68ch;
+    }
+
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+    .metric {
+      flex: 1;
+      min-width: 108px;
+    }
+    .metric > span.label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 650;
+      margin-bottom: var(--space-2);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .chip {
+      display: inline-block;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      font-size: var(--fs-sm);
+      font-weight: 650;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      color: var(--chip-text);
+    }
+    .chip-urgency--low {
+      border-color: #5a9d86;
+      background: rgba(13, 110, 92, 0.14);
+    }
+    .chip-urgency--medium {
+      border-color: #c58a50;
+      background: rgba(180, 83, 9, 0.14);
+    }
+    .chip-urgency--high {
+      border-color: #c45c5c;
+      background: rgba(185, 28, 28, 0.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      .chip-urgency--low { background: rgba(82, 176, 156, 0.16); border-color: #3d8f7a; }
+      .chip-urgency--medium { background: rgba(251, 191, 36, 0.12); border-color: #a67c2f; }
+      .chip-urgency--high { background: rgba(248, 113, 113, 0.14); border-color: #b45353; }
+    }
+
+    .confidence-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--space-2);
+    }
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .metric-confidence.is-high { color: var(--conf-high); }
+    .metric-confidence.is-mid { color: var(--conf-mid); }
+    .metric-confidence.is-low { color: var(--conf-low); }
+    .confidence-text {
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      color: var(--muted);
+      max-width: 22ch;
+    }
+
+    .conf-meter {
+      width: 100%;
+      max-width: 160px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--border);
+      margin-top: var(--space-2);
+      overflow: hidden;
+    }
+    .conf-meter > span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      width: 0;
+      min-width: 4%;
+      background: var(--accent);
+    }
+    .conf-meter.is-high > span { background: var(--conf-high); }
+    .conf-meter.is-mid > span { background: var(--conf-mid); }
+    .conf-meter.is-low > span { background: var(--conf-low); }
+
+    .card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    textarea.reply-edit {
+      width: 100%;
+      max-width: 72ch;
+      min-height: 200px;
+      padding: var(--space-3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
+      font-size: 0.98rem;
+      line-height: 1.5;
+      background: #f4f7fa;
+      color: var(--text);
+      resize: vertical;
+    }
+    @media (prefers-color-scheme: dark) {
+      textarea.reply-edit {
+        background: #12161c;
+      }
+    }
+    textarea.reply-edit:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+      border-color: var(--accent);
+    }
+
+    .card-actions {
+      margin-top: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    ul.actions-list {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+    ul.actions-list li { margin: 0.3rem 0; }
+    .empty-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .flags li {
+      color: var(--warn);
+      background: var(--warn-bg);
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      margin: 0.3rem 0;
+      list-style-position: inside;
+    }
+
+    footer.site-footer {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+    footer.site-footer summary {
+      cursor: pointer;
+      font-weight: 650;
+      color: var(--text);
+      margin-bottom: var(--space-2);
+    }
+    footer.site-footer summary:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+      border-radius: 6px;
+    }
+    footer.site-footer .dev-body {
+      max-width: 72ch;
+      line-height: 1.5;
+    }
+    footer.site-footer code {
+      font-size: 0.85em;
+      padding: 0.12em 0.38em;
+      border-radius: 4px;
+      background: var(--chip-bg);
+      border: 1px solid var(--border);
+      color: var(--chip-text);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: var(--space-4);
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      padding: 0.65rem 1.35rem;
+      background: var(--text);
+      color: var(--card);
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 999px;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      z-index: 200;
+      pointer-events: none;
+    }
+    .toast.is-visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  {% if result %}
+  <a class="skip-link" href="#results">Jump to results</a>
+  {% endif %}
+
+  <header>
+    <h1>Strata Management Consultants — Enquiry triage</h1>
+    <p class="lede">Paste a client enquiry. The model classifies it, scores confidence, and suggests a reply and internal actions.</p>
+    <p class="trust-line"><strong>Human in the loop:</strong> Drafts are AI suggestions only — always review and edit before sending to a client.</p>
+  </header>
+
+  <main>
+    <div class="layout">
+      <div class="panel panel--input">
+        <form
+          id="triage-form"
+          method="post"
+          action="/"
+          {% if error %}aria-describedby="form-error"{% endif %}
+        >
+          <label for="enquiry">Client enquiry</label>
+          <textarea
+            id="enquiry"
+            name="enquiry"
+            required
+            {% if error %}aria-invalid="true"{% endif %}
+          >{% if enquiry_text is not none %}{{ enquiry_text }}{% else %}{{ default_sample }}{% endif %}</textarea>
+
+          <div class="actions">
+            <button class="btn btn--primary" type="submit" id="btn-submit">Analyse enquiry</button>
+          </div>
+
+          {% if error %}
+          <div class="error" id="form-error" role="alert" aria-live="polite">{{ error }}</div>
+          {% endif %}
+        </form>
+      </div>
+
+      {% if result %}
+      <div class="panel panel--output" id="results" tabindex="-1">
+        <section class="results" aria-label="Triage results">
+          {% set conf = result.confidence | float %}
+          {% set conf_cls = 'is-high' if conf >= 0.8 else ('is-mid' if conf >= 0.5 else 'is-low') %}
+          {% set meter_cls = 'is-high' if conf >= 0.8 else ('is-mid' if conf >= 0.5 else 'is-low') %}
+          {% set conf_words = 'High certainty' if conf >= 0.8 else ('Moderate certainty' if conf >= 0.5 else 'Low certainty — review carefully') %}
+          {% set _cw = (conf * 100) | int %}
+          {% set pct_clamped = 0 if _cw < 0 else (100 if _cw > 100 else _cw) %}
+
+          <div class="card card--metrics">
+            <h2 class="kicker">At a glance</h2>
+            <div class="metrics">
+              <div class="metric">
+                <span class="label">Classification</span>
+                <div class="chips">
+                  <span class="chip chip-class">{{ result.classification | replace('_', ' ') | title }}</span>
+                </div>
+              </div>
+              <div class="metric">
+                <span class="label">Confidence</span>
+                <div class="confidence-row">
+                  <strong class="metric-value metric-confidence {{ conf_cls }}">{{ "%.0f"|format(conf * 100) }}%</strong>
+                  <span class="confidence-text">{{ conf_words }}</span>
+                </div>
+                <div class="conf-meter {{ meter_cls }}" aria-hidden="true"><span style="width: {{ pct_clamped }}%;"></span></div>
+              </div>
+              <div class="metric">
+                <span class="label">Urgency</span>
+                <div class="chips">
+                  <span class="chip chip-urgency chip-urgency--{{ result.urgency }}">{{ result.urgency | title }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card card--support">
+            <h2 class="kicker">Intent summary</h2>
+            <p class="prose">{{ result.client_intent_summary or '—' }}</p>
+          </div>
+
+          <div class="card card--support">
+            <h2 class="kicker">Why this confidence?</h2>
+            <p class="prose">{{ result.confidence_rationale or '—' }}</p>
+          </div>
+
+          <div class="card card--work">
+            <h2 class="work-title" id="next-steps-heading">Next steps</h2>
+            <h3 class="subhead">Draft reply</h3>
+            <p class="hint">Edit the text below, then use <strong>Copy reply</strong> to paste into your email client.</p>
+            <textarea id="reply-text" class="reply-edit" rows="14" aria-label="Editable draft reply">{{ result.suggested_staff_reply or '' }}</textarea>
+            <div class="card-actions">
+              <button type="button" class="btn btn--secondary" id="btn-copy-reply">Copy reply</button>
+            </div>
+
+            <h3 class="subhead">Recommended actions</h3>
+            {% if result.recommended_actions %}
+            <ul class="actions-list">
+              {% for a in result.recommended_actions %}
+              <li>{{ a }}</li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-hint">No specific actions suggested.</p>
+            {% endif %}
+          </div>
+
+          {% if result.flags %}
+          <div class="card card--support">
+            <h2 class="kicker">Flags</h2>
+            <ul class="flags actions-list">
+              {% for f in result.flags %}
+              <li>{{ f }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </section>
+      </div>
+      {% endif %}
+    </div>
+
+    <footer class="site-footer">
+      <details>
+        <summary>Developer / setup</summary>
+        <div class="dev-body">
+          <p>Prompts: <code>strata_triage/prompts.py</code> · API: OpenAI (<code>OPENAI_API_KEY</code> in <code>.env</code>) · See <code>README.md</code> for run instructions and automation notes.</p>
+        </div>
+      </details>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>Copied</div>
+
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      var form = document.getElementById("triage-form");
+      var btn = document.getElementById("btn-submit");
+      if (form && btn) {
+        form.addEventListener("submit", function () {
+          btn.disabled = true;
+          btn.setAttribute("aria-busy", "true");
+          form.setAttribute("aria-busy", "true");
+          btn.textContent = "Analysing…";
+        });
+      }
+
+      var results = document.getElementById("results");
+      if (results) {
+        requestAnimationFrame(function () {
+          var behavior = reduceMotion ? "auto" : "smooth";
+          results.scrollIntoView({ behavior: behavior, block: "start" });
+          results.focus({ preventScroll: true });
+        });
+      }
+
+      var copyBtn = document.getElementById("btn-copy-reply");
+      var replyEl = document.getElementById("reply-text");
+      var toast = document.getElementById("toast");
+      var copyDefaultLabel = "Copy reply";
+
+      if (copyBtn && replyEl && toast) {
+        copyBtn.addEventListener("click", function () {
+          var text = replyEl.value || "";
+
+          function showToast(message, updateCopyBtn) {
+            toast.textContent = message;
+            toast.hidden = false;
+            toast.classList.add("is-visible");
+            if (updateCopyBtn) {
+              copyBtn.textContent = "Copied";
+              setTimeout(function () {
+                copyBtn.textContent = copyDefaultLabel;
+              }, 2000);
+            }
+            var hideMs = reduceMotion ? 800 : 1800;
+            setTimeout(function () {
+              toast.classList.remove("is-visible");
+              setTimeout(function () {
+                toast.hidden = true;
+              }, reduceMotion ? 0 : 280);
+            }, hideMs);
+          }
+
+          function failToast() {
+            showToast("Could not copy", false);
+          }
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              showToast("Copied", true);
+            }).catch(failToast);
+          } else {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand("copy");
+              showToast("Copied", true);
+            } catch (e) {
+              failToast();
+            }
+            document.body.removeChild(ta);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
