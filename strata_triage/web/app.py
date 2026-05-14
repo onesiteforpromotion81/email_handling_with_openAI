@@ -1,5 +1,3 @@
-"""Flask application factory — HTTP layer stays thin."""
-
 from __future__ import annotations
 
 import os
@@ -43,6 +41,7 @@ def create_app(settings: Settings | None = None) -> Flask:
             result=result,
             error=error,
             default_sample=DEFAULT_SAMPLE,
+            mock_mode=settings.triage_use_mock,
         )
 
     @app.post("/api/triage")
@@ -72,7 +71,6 @@ def create_app(settings: Settings | None = None) -> Flask:
 
 
 def run_dev() -> None:
-    """Entry point for `python app.py`."""
     port = int(os.environ.get("PORT", "5000"))
     app = create_app()
     app.run(host="0.0.0.0", port=port, debug=os.environ.get("FLASK_DEBUG") == "1")

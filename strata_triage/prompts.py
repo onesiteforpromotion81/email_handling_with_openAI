@@ -1,7 +1,3 @@
-"""
-Prompts for enquiry triage — kept in one module so reviewers can inspect design choices.
-"""
-
 SYSTEM_PROMPT = """You are an AI assistant helping staff at **Strata Management Consultants**
 (Australian strata / body corporate management). Your job is to triage **incoming client
 enquiries** (email or web form text) so a human can respond quickly.

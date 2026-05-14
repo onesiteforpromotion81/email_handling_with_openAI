@@ -11,18 +11,36 @@ Small prototype for **Strata Management Consultants**: paste a client enquiry, g
 
 ## Layout (refactor)
 
-Code lives under **`strata_triage/`**: domain models and errors, **`LLMClient`** protocol, OpenAI adapter, **`EnquiryTriageService`** (orchestration), **`process_enquiry()`** facade, and **`create_app()`** Flask factory. HTTP maps **401 / 429** from OpenAI to clearer operator messages instead of a single generic “API error” string.
+Code lives under **`strata_triage/`**: domain models and errors, **`LLMClient`** protocol, OpenAI and **mock** adapters, **`EnquiryTriageService`** (orchestration), **`process_enquiry()`** facade, and **`create_app()`** Flask factory. HTTP maps **401 / 429** from OpenAI to clearer operator messages instead of a single generic “API error” string.
 
 ## Setup
 
 ```bash
 cd /home/dev/assessment
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Edit .env — set OPENAI_API_KEY
 ```
+
+On Windows, activate the venv with `.venv\Scripts\activate` instead of `source`.
+
+### Demo without OpenAI (mock mode)
+
+Reviewers can run the full UI and CLI **without** an API key or quota:
+
+```bash
+export TRIAGE_USE_MOCK=1
+flask --app app run
+```
+
+Or add to `.env`:
+
+```env
+TRIAGE_USE_MOCK=1
+```
+
+Mock mode uses **`MockLLMClient`** (`strata_triage/adapters/mock_llm.py`): simple keyword heuristics and a fixed JSON shape so parsing, coercion, and the web UI behave like production. The draft reply includes a short note that it was generated in mock mode.
 
 ## Run
 
@@ -87,6 +105,28 @@ Prompts are in **`strata_triage/prompts.py`** so they are easy to review.
 - **Task queue** — Worker consumes `recommended_actions` and creates tasks (e.g. “Check levy account” → finance queue).
 - **Human in the loop** — Always keep staff approval before send; this tool is **assistive**, not autonomous client-facing.
 
+## Sample JSON output
+
+Example response shape (values differ per enquiry). This matches what `POST /api/triage` and `python cli.py` return after a successful run:
+
+```json
+{
+  "classification": "support_request",
+  "confidence": 0.74,
+  "confidence_rationale": "Default mock path: treated as an operational request from an existing stakeholder.",
+  "client_intent_summary": "Typical owner or committee enquiry about levies, maintenance, meetings, or records.",
+  "suggested_staff_reply": "Dear owner / committee member,\n\nThank you for your email…",
+  "recommended_actions": [
+    "Assign to the relevant portfolio manager based on scheme",
+    "Confirm scheme name and lot number in the CRM"
+  ],
+  "urgency": "medium",
+  "flags": []
+}
+```
+
+With **`TRIAGE_USE_MOCK=1`**, you can reproduce output locally without calling OpenAI. With a live model, wording and scores vary per enquiry while keys stay the same.
+
 ## Files
 
 | Path | Role |
@@ -97,6 +137,7 @@ Prompts are in **`strata_triage/prompts.py`** so they are easy to review.
 | `strata_triage/prompts.py` | System / user / repair prompts |
 | `strata_triage/ports.py` | `LLMClient` protocol |
 | `strata_triage/adapters/openai_llm.py` | OpenAI implementation + error mapping |
+| `strata_triage/adapters/mock_llm.py` | Deterministic mock when `TRIAGE_USE_MOCK=1` |
 | `strata_triage/services/triage.py` | `EnquiryTriageService` — parse, repair, coerce |
 | `strata_triage/facade.py` | `process_enquiry()` for CLI/UI |
 | `strata_triage/web/app.py` | `create_app()`, routes |

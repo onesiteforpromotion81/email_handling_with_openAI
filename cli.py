@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""CLI: python cli.py [--file path] or pipe stdin."""
 
 from __future__ import annotations
 
@@ -12,8 +11,8 @@ from strata_triage.facade import process_enquiry
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Triage a strata client enquiry via OpenAI.")
-    p.add_argument("--file", "-f", help="Read enquiry text from file")
+    p = argparse.ArgumentParser()
+    p.add_argument("--file", "-f")
     args = p.parse_args()
 
     if args.file:

@@ -1,5 +1,3 @@
-"""Typed triage output — single contract for API, CLI, and templates."""
-
 from __future__ import annotations
 
 from enum import StrEnum

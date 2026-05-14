@@ -1,5 +1,3 @@
-"""Orchestrates triage: validation, LLM call, JSON repair, coercion to domain model."""
-
 from __future__ import annotations
 
 import json
@@ -74,7 +72,6 @@ def _result_from_raw(raw: dict[str, Any]) -> EnquiryTriageResult:
 
 
 def empty_enquiry_result() -> EnquiryTriageResult:
-    """No LLM call — used when the client submitted blank text."""
     return _result_from_raw(
         {
             "classification": Classification.UNCLEAR.value,
@@ -94,8 +91,6 @@ def empty_enquiry_result() -> EnquiryTriageResult:
 
 
 class EnquiryTriageService:
-    """Application service — depends on `LLMClient`, not on OpenAI directly."""
-
     def __init__(self, llm: LLMClient) -> None:
         self._llm = llm
 

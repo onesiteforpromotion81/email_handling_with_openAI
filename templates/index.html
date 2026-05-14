@@ -135,6 +135,28 @@
       border: 1px solid var(--border);
     }
 
+    .mock-banner {
+      margin: 0;
+      padding: var(--space-2) var(--space-4);
+      background: #1e3a5f;
+      color: #e0f2fe;
+      font-size: var(--fs-sm);
+      text-align: center;
+      border-bottom: 1px solid #334155;
+    }
+    .mock-banner code {
+      font-size: 0.9em;
+      padding: 0.1em 0.35em;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .mock-banner {
+        background: #253a52;
+        color: #bae6fd;
+      }
+    }
+
     main {
       max-width: 1180px;
       margin: 0 auto;
@@ -527,6 +549,12 @@
 <body>
   {% if result %}
   <a class="skip-link" href="#results">Jump to results</a>
+  {% endif %}
+
+  {% if mock_mode %}
+  <p class="mock-banner" role="status">
+    <strong>Mock mode</strong> — responses use local heuristics, not OpenAI. Set <code>TRIAGE_USE_MOCK=0</code> and <code>OPENAI_API_KEY</code> for live triage.
+  </p>
   {% endif %}
 
   <header>

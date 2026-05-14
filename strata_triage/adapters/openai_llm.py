@@ -1,5 +1,3 @@
-"""OpenAI adapter for `LLMClient` with explicit error mapping."""
-
 from __future__ import annotations
 
 from openai import (
@@ -58,8 +56,6 @@ def _map_openai_exception(exc: OpenAIError) -> LLMProviderError:
 
 
 class OpenAIChatClient:
-    """Chat Completions with JSON object response format."""
-
     def __init__(self, settings: Settings) -> None:
         key = settings.openai_api_key
         if not key:
